@@ -172,7 +172,7 @@ class MultimodalLLMJudge:
 
 def run_judge(judge_name: str, interactions: list[Interaction]):
     judge = MultimodalLLMJudge(judge_name)
-    for interaction in tqdm.tqdm(interactions):
+    for interaction in tqdm.tqdm(interactions, desc="Get judgements"):
         # adds judgement in-place
         judge.get_judgement(interaction)
     return interactions
