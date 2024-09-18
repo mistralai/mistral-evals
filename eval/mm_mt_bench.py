@@ -1,22 +1,23 @@
-import tqdm
-import io
+import ast
 import base64
-import re
+import dataclasses
+import io
+import json
 import logging
 import os
-import dataclasses
-import json
-import fire
-from typing import Any, Callable, Optional, Sequence, Generator
-import openai
-from pathlib import Path
-import requests
-from PIL import Image
+import re
 import time
 from collections import defaultdict
-import ast
-import numpy as np
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any, Callable, Generator, Optional, Sequence
+
+import fire
+import numpy as np
+import openai
+import requests
+import tqdm
+from PIL import Image
 
 JUDGES = frozenset(
     [
