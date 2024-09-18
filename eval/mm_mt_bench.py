@@ -3,12 +3,12 @@ import base64
 import dataclasses
 import io
 import json
-import logging
 import os
 import re
+import sys
 import time
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Generator, Optional, Sequence
 
@@ -17,6 +17,7 @@ import numpy as np
 import openai
 import requests
 import tqdm
+from datasets import load_dataset
 from PIL import Image
 
 JUDGES = frozenset(
@@ -29,6 +30,7 @@ DEFAULT_TEMPERATURE = 0.0
 DEFAULT_MAX_TOKENS = 4096
 SEED = 0
 BRACKET_SCORE_RE = re.compile(r"\[\[(\d+\.?\d*)\]\]")
+DATASET_NAME = "mistralai/MM-MT-Bench"
 
 
 @dataclasses.dataclass
@@ -148,8 +150,9 @@ class MultimodalLLMJudge:
             except Exception as e:
                 n_trials += 1
                 if n_trials < self.API_MAX_RETRY:
-                    logging.error(
-                        f"Error {e} - retrying {n_trials}/{self.API_MAX_RETRY}"
+                    print(
+                        f"Error {e} - retrying {n_trials}/{self.API_MAX_RETRY}",
+                        file=sys.stderr,
                     )
                     time.sleep(backoff)
                     backoff *= 2
@@ -175,27 +178,28 @@ def run_judge(judge_name: str, interactions: list[Interaction]):
     return interactions
 
 
-def emplace_images(d: dict[str, Any]):
-    """Replaces image urls with actual images loaded from dataset."""
-    for m in d["messages"]:
+def emplace_image(ccr: dict[str, Any], image: Image.Image):
+    """Replaces image message with base64 encoded image."""
+    for m in ccr["messages"]:
         if isinstance(m["content"], list):
             for c in m["content"]:
                 if c["type"] == "image":
                     c["type"] = "image_url"
-                    im_path = c.pop("image_path")
-                    im = Image.open(im_path)
                     stream = io.BytesIO()
-                    im_format = im.format or "PNG"
-                    im.save(stream, format=im_format)
+                    im_format = image.format or "PNG"
+                    image.save(stream, format=im_format)
                     im_b64 = base64.b64encode(stream.getvalue()).decode("ascii")
                     c["image_url"] = {"url": f"data:image/jpeg;base64,{im_b64}"}
 
 
+
 def get_interactions(model_name: Optional[str]) -> Generator[Interaction, None, None]:
-    for json_line in DATA_PATH.open():
-        ccr = json.loads(json_line.rstrip())
-        emplace_images(ccr)
-        category = ccr.pop("category", "other")
+    ds = load_dataset(DATASET_NAME)["eval"]
+    for example in tqdm.tqdm(ds, "Loading dataset"):
+        ccr = json.loads(example["conversation"])
+        image = example["image"]
+        emplace_image(ccr, image)
+        category = example["category"]
         for index in range(len(ccr["messages"])):
             if index % 2 == 0:
                 new_ccr = {
@@ -272,6 +276,7 @@ def _wait_till_healthy(url) -> bool:
         # Query the endpoint
         try:
             req = requests.get(health_endpoint)
+            print("Server is up!")
         except Exception:
             # Ignore exception
             pass
@@ -325,10 +330,9 @@ def get_vllm_model_fn(model_name: str, url: str) -> Callable[[dict[str, Any]], s
                 assert completion_dict["choices"][0]["message"]["role"] == "assistant"
                 return completion_dict["choices"][0]["message"]["content"]
             except Exception as e:
-                logging.exception(
-                    "Query to model failed, retrying (%d / %d)",
-                    max_retries - retries_left + 1,
-                    max_retries,
+                print(
+                    f"Query to model failed, retrying ({max_retries - retries_left + 1} / {max_retries}): {e}",
+                    file=sys.stderr,
                 )
                 time.sleep(backoff)
                 backoff *= 2
@@ -337,6 +341,15 @@ def get_vllm_model_fn(model_name: str, url: str) -> Callable[[dict[str, Any]], s
         raise RuntimeError("Failed to get a response.")
 
     return model_fn
+
+
+def get_model_ans(
+    model_fn: Callable[[dict[str, Any]], str],
+    interaction: Interaction
+):
+    model_ans = model_fn(interaction.request)
+    interaction.model_answer = model_ans
+    return interaction
 
 
 def evaluate(
@@ -358,32 +371,34 @@ def evaluate(
     output_dir = Path(output_dir_str)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    interactions = []
+    interactions = list(get_interactions(model_name))
+    print(f"Total number of turns: {len(interactions)}")
     output_generations_file = output_dir / "generations.json"
     output_generations_graded_file = output_dir / "generations_graded.json"
 
     if not output_generations_file.exists():
-        futures = []
-        interactions = list(get_interactions(model_name))
-
         with ThreadPoolExecutor(max_workers=8) as executor:
-            for interaction in interactions:
-                futures.append(executor.submit(model_fn, interaction.request))
+            futures = [
+                executor.submit(get_model_ans, model_fn, interaction)
+                for interaction in interactions
+            ]
 
-        for i, future in tqdm.tqdm(enumerate(futures)):
-            interactions[i].model_answer = future.result()
-        logging.info("Saving generations")
+            interactions_w_model_ans = []
+            for future in tqdm.tqdm(as_completed(futures), total=len(interactions), desc="Querying model"):
+                interactions_w_model_ans.append(future.result())
+            interactions = interactions_w_model_ans
+        print("Saving generations")
         save_interactions(output_generations_file, interactions)
     else:
-        logging.info("Found generations file %s", output_generations_file)
+        print("Found generations file %s", output_generations_file)
         interactions = load_interactions(output_generations_file)
 
     if not output_generations_graded_file.exists():
-        logging.info("Querying judge for grades")
+        print("Querying judge for grades")
         graded_interactions = run_judge(judge, interactions)
         save_interactions(output_generations_graded_file, interactions)
     else:
-        logging.info("Loading judgements from %s", output_generations_graded_file)
+        print("Loading judgements from %s", output_generations_graded_file)
         graded_interactions = load_interactions(output_generations_file)
 
     final_metrics = aggregate_judge_outputs(graded_interactions)
