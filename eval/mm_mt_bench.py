@@ -25,10 +25,8 @@ JUDGES = frozenset(
         "gpt-4o-2024-05-13",
     ]
 )
-DATA_PATH = Path("eval/data/mm_mt_bench/data.jsonl")
 DEFAULT_TEMPERATURE = 0.0
 DEFAULT_MAX_TOKENS = 4096
-SEED = 0
 BRACKET_SCORE_RE = re.compile(r"\[\[(\d+\.?\d*)\]\]")
 DATASET_NAME = "mistralai/MM-MT-Bench"
 
