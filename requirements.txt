@@ -1,0 +1,7 @@
+datasets==3.0.0
+fire==0.6.0
+numpy==1.26.4
+openai==1.45.0
+pillow==10.4.0
+tqdm==4.66.5
+vllm==0.6.1.post2
