@@ -46,7 +46,6 @@ def _wait_till_healthy(url) -> bool:
     )
 
 
-
 def _emplace_image(ccr: dict[str, Any]):
     """Replaces image message with base64 encoded image."""
     ccr = copy.deepcopy(ccr)
@@ -64,7 +63,6 @@ def _emplace_image(ccr: dict[str, Any]):
                         "url": f"data:image/{im_format.lower()};base64,{im_b64}"
                     }
     return ccr
-
 
 
 def get_vllm_model_fn(model_name: str, url: str) -> Callable[[dict[str, Any]], str]:

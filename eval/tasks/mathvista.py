@@ -5,7 +5,11 @@ import re
 
 from PIL import Image
 
-from eval.metrics import Metric, CoTRelaxedCorrectness, AnywhereInAnswerRelaxedCorrectness
+from eval.metrics import (
+    Metric,
+    CoTRelaxedCorrectness,
+    AnywhereInAnswerRelaxedCorrectness,
+)
 from eval.task import HuggingFaceEval, Interaction
 
 
@@ -35,7 +39,6 @@ class MathVista(HuggingFaceEval):
         else:
             answer = row["answer"]
 
-
         return Interaction(
             {
                 "temperature": 0.0,
@@ -45,15 +48,14 @@ class MathVista(HuggingFaceEval):
                         "role": "user",
                         "content": [
                             {"type": "image", "image": image},
-                            {"type": "text", "text": question + "\n" + PROMPT}
+                            {"type": "text", "text": question + "\n" + PROMPT},
                         ],
                     }
-                ]
+                ],
             },
             reference_answer=answer,
         )
-    
+
     @property
     def metric_fns(self) -> list[Metric]:
         return [CoTRelaxedCorrectness(), AnywhereInAnswerRelaxedCorrectness()]
-        

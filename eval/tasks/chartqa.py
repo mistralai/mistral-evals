@@ -8,7 +8,11 @@ from pathlib import Path
 from datasets import load_dataset
 from tqdm import tqdm
 
-from eval.metrics import Metric, CoTRelaxedCorrectness, AnywhereInAnswerRelaxedCorrectness
+from eval.metrics import (
+    Metric,
+    CoTRelaxedCorrectness,
+    AnywhereInAnswerRelaxedCorrectness,
+)
 from eval.task import HuggingFaceEval, Interaction
 
 
@@ -35,7 +39,6 @@ class ChartQA(HuggingFaceEval):
         question = row["question"]
         answer: list[str] = row["answer"]
 
-
         return Interaction(
             {
                 "temperature": 0.0,
@@ -45,16 +48,14 @@ class ChartQA(HuggingFaceEval):
                         "role": "user",
                         "content": [
                             {"type": "image", "image": image},
-                            {"type": "text", "text": question + "\n" + PROMPT}
+                            {"type": "text", "text": question + "\n" + PROMPT},
                         ],
                     }
-                ]
+                ],
             },
             reference_answer=answer,
         )
-    
+
     @property
     def metric_fns(self) -> list[Metric]:
         return [CoTRelaxedCorrectness(), AnywhereInAnswerRelaxedCorrectness()]
-
-        

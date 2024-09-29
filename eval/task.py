@@ -11,9 +11,11 @@ from tqdm import tqdm
 
 from eval.metrics import Metric
 
+
 @dataclasses.dataclass
 class Interaction:
     """A single round of interaction from a model given a chat completion request."""
+
     # vLLM compatible chat completion request
     request: dict[str, Any]
 
@@ -28,7 +30,6 @@ class Interaction:
 
     # Extra metadata from dataset (e.g. category).
     meta: dict[str, Any] = dataclasses.field(default_factory=dict)
-
 
 
 class Eval(ABC):
@@ -51,7 +52,7 @@ class Eval(ABC):
     def load_eval(self):
         """Loads dataset and applies transforms to get chat completion requests."""
         raise NotImplementedError
-    
+
     def get_responses(self, model_fn=Callable[[dict[str, Any]], str]):
         """Queries model to get responses for each interaction."""
 
@@ -62,7 +63,11 @@ class Eval(ABC):
                 futures[executor.submit(model_fn, request)] = interaction
 
             interactions_w_model_ans = []
-            for future in tqdm(as_completed(futures), total=len(self.interactions), desc="Querying model"):
+            for future in tqdm(
+                as_completed(futures),
+                total=len(self.interactions),
+                desc="Querying model",
+            ):
                 interaction = futures[future]
                 interaction.model_answer = future.result()
                 interactions_w_model_ans.append(interaction)
@@ -73,8 +78,8 @@ class Eval(ABC):
         for interaction in tqdm(self.interactions):
             for metric in self.metric_fns:
                 interaction.metrics[metric.name] = metric.score(
-                    interaction.model_answer, interaction.reference_answer)
-
+                    interaction.model_answer, interaction.reference_answer
+                )
 
     def aggregate_metrics(self) -> dict[str, float]:
         """Aggregates metrics across all the interactions."""
@@ -88,6 +93,7 @@ class Eval(ABC):
 
 class HuggingFaceEval(Eval):
     """Evals hosted on hugging face for which datasets.load_dataset can be used."""
+
     dataset_name: str
     dataset_split: str
 
@@ -98,6 +104,6 @@ class HuggingFaceEval(Eval):
         """Loads dataset and applies transforms to get chat completion requests."""
         for row in tqdm(
             self.get_dataset(),
-            desc=f"Loading {self.dataset_name} [{self.dataset_split}]"):
-
+            desc=f"Loading {self.dataset_name} [{self.dataset_split}]",
+        ):
             self.interactions.append(self._to_interaction(row))

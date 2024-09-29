@@ -25,7 +25,6 @@ DEFAULT_MAX_TOKENS = 4096
 BRACKET_SCORE_RE = re.compile(r"\[\[(\d+\.?\d*)\]\]")
 
 
-
 @dataclass
 class Judgement:
     judgement: str
@@ -158,8 +157,6 @@ class MultimodalLLMJudge:
         return interaction
 
 
-
-
 def run_judge(judge_name: str, interactions: list[Interaction]):
     judge = MultimodalLLMJudge(judge_name)
     futures = []
@@ -168,7 +165,9 @@ def run_judge(judge_name: str, interactions: list[Interaction]):
         for interaction in tqdm(interactions):
             futures.append(executor.submit(judge.get_judgement, interaction))
 
-        for future in tqdm(as_completed(futures), total=len(interactions), desc="Querying judge"):
+        for future in tqdm(
+            as_completed(futures), total=len(interactions), desc="Querying judge"
+        ):
             graded_interactions.append(future.result())
         return graded_interactions
 
@@ -203,28 +202,35 @@ class MultimodalMTBench(HuggingFaceEval):
                     }
                     ref_answer: str = messages[index + 1]["content"]
 
-                    self.interactions.append(Interaction(
-                        request=new_ccr,
-                        reference_answer=ref_answer,
-                        meta={"category": category, "turn": index // 2},
-                    ))
+                    self.interactions.append(
+                        Interaction(
+                            request=new_ccr,
+                            reference_answer=ref_answer,
+                            meta={"category": category, "turn": index // 2},
+                        )
+                    )
 
     def compute_metrics(self):
         self.interactions = run_judge(self.judge, self.interactions)
 
     def aggregate_metrics(self) -> dict[str, float]:
         category_scores = defaultdict(list)
-        micro_average_score = float(np.mean([interaction.metrics["score"] for interaction in self.interactions]))
+        micro_average_score = float(
+            np.mean([interaction.metrics["score"] for interaction in self.interactions])
+        )
         for interaction in self.interactions:
             # TODO: rename to grade
             score = interaction.metrics["score"]
-            category_scores[interaction.meta["category"]].append(score)  # average by question type
+            category_scores[interaction.meta["category"]].append(
+                score
+            )  # average by question type
             category_scores[interaction.meta["turn"]].append(score)  # average by turn
-        category_averages = {f"{cat}_average": float(np.mean(v)) for cat, v in category_scores.items()}
+        category_averages = {
+            f"{cat}_average": float(np.mean(v)) for cat, v in category_scores.items()
+        }
         category_macro_average = float(np.mean(list(category_averages.values())))
         return {
             "micro_average_score": micro_average_score,
             "macro_average_score": category_macro_average,
             **category_averages,
         }
-    

@@ -27,13 +27,13 @@ class DocVQA(HuggingFaceEval):
                         "role": "user",
                         "content": [
                             {"type": "image", "image": row["image"]},
-                            {"type": "text", "text": row["question"] + "\n" + PROMPT}
-                        ]
+                            {"type": "text", "text": row["question"] + "\n" + PROMPT},
+                        ],
                     }
-                ]
+                ],
             },
-            reference_answer=row["answers"]
+            reference_answer=row["answers"],
         )
-    
+
     def get_dataset(self):
         return load_dataset(self.dataset_name, self.dataset_config)[self.dataset_split]

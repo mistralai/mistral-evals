@@ -6,7 +6,6 @@ from eval.tasks.mathvista import MathVista
 from eval.tasks.chartqa import ChartQA
 
 
-
 TASK_REGISTRY = {
     "mm_mt_bench": MultimodalMTBench,
     "vqav2": VQAv2,
@@ -20,5 +19,5 @@ TASK_REGISTRY = {
 def get_task(task_name):
     if task_name not in TASK_REGISTRY:
         raise ValueError(f"Did not recognize task name {task_name}")
-    
+
     return TASK_REGISTRY[task_name]()

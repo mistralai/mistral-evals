@@ -11,7 +11,6 @@ def _normalize_string(s):
     return s
 
 
-
 def _remove_end_punctuation(unnormalized_string: str) -> str:
     # remove end puncutation
     while (
@@ -28,14 +27,12 @@ def _remove_end_punctuation(unnormalized_string: str) -> str:
 
 @dataclass
 class Metric:
-
     @property
     def name(self) -> str:
         raise NotImplementedError
 
     def score(self, model_answer: str, reference_answer: str | list[str]) -> float:
         raise NotImplementedError
-    
 
 
 class VQAMatch(Metric):
@@ -51,14 +48,12 @@ class VQAMatch(Metric):
             if _normalize_string(answer) == normalize_response_text
         ]
         return min(1.0, float(len(matching_answers)) / 3)
-    
+
 
 class ANLS(Metric):
-
     @property
     def name(self) -> str:
         return "anls"
-
 
     def _edit_distance_helper(self, s1: str, s2: str) -> float:
         if len(s1) > len(s2):
@@ -102,12 +97,8 @@ class ANLS(Metric):
 
 
 class RelaxedCorrectness(Metric):
-
     def _relaxed_correctness(
-        self,
-        prediction: str,
-        targets: list[str],
-        max_relative_change: float = 0.05
+        self, prediction: str, targets: list[str], max_relative_change: float = 0.05
     ) -> float:
         """Calculates relaxed correctness.
 
@@ -213,9 +204,13 @@ class RelaxedCorrectness(Metric):
             value_list.append(value)
 
         return max(value_list)
-    
+
     def score(self, model_answer: str, reference_answer: str | list[str]) -> float:
-        reference_answer = reference_answer if isinstance(reference_answer, list) else [reference_answer]
+        reference_answer = (
+            reference_answer
+            if isinstance(reference_answer, list)
+            else [reference_answer]
+        )
         return self._relaxed_correctness(model_answer, reference_answer)
 
 
@@ -229,7 +224,7 @@ class CoTRelaxedCorrectness(RelaxedCorrectness):
     def _get_final_answer(self, generation: str) -> str:
         def _find_last_occurrence(pattern: str, string: str):
             return string.rfind(pattern)
-        
+
         # Strip extraneous markdown around the answer:
         generation = re.sub(r"([aA]nswer)\**:\**", "\\1:", generation)
 
@@ -251,7 +246,7 @@ class CoTRelaxedCorrectness(RelaxedCorrectness):
             return final_answer
         else:
             return ""
-    
+
     def score(self, model_answer: str, reference_answer: str | list[str]) -> float:
         parsed_model_answer = self._get_final_answer(model_answer)
         if not parsed_model_answer:
@@ -260,26 +255,29 @@ class CoTRelaxedCorrectness(RelaxedCorrectness):
         return super().score(parsed_model_answer, reference_answer)
 
 
-
 class AnywhereInAnswerRelaxedCorrectness(CoTRelaxedCorrectness):
     """Falls back to handle cases where reference answer appears anywhere in generation."""
 
     @property
     def name(self) -> str:
         return "anywhere_in_answer_relaxed_correctness"
-    
+
     def score(self, model_answer: str, reference_answer: str | list[str]) -> float:
-        reference_answer = reference_answer if isinstance(reference_answer, list) else [reference_answer]
+        reference_answer = (
+            reference_answer
+            if isinstance(reference_answer, list)
+            else [reference_answer]
+        )
         parsed_model_answer = self._get_final_answer(model_answer)
         if parsed_model_answer:
             return self._relaxed_correctness(parsed_model_answer, reference_answer)
-        
+
         # Fallback: check if reference answer appears anywhere in the model answer.
         for ref in reference_answer:
             try:
                 # Try to parse as a float
                 number = float(ref)
-                
+
                 # Revert to int if it is actually an int.
                 if int(number) == number:
                     number = int(number)
@@ -299,13 +297,10 @@ class AnywhereInAnswerRelaxedCorrectness(CoTRelaxedCorrectness):
                 # positives as well as false negatives.
                 candidates = []
                 for ref in reference_answer:
-                    candidates.extend([
-                        f"is {ref}", f"was {ref}", " {ref}.", "are {ref}"
-                    ])
+                    candidates.extend(
+                        [f"is {ref}", f"was {ref}", " {ref}.", "are {ref}"]
+                    )
                 if any([c.lower() in model_answer for c in candidates]):
                     return 1.0
 
-
         return 0
-    
-

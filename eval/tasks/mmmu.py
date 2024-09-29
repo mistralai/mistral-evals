@@ -5,7 +5,11 @@ import re
 
 from PIL import Image
 
-from eval.metrics import Metric, CoTRelaxedCorrectness, AnywhereInAnswerRelaxedCorrectness
+from eval.metrics import (
+    Metric,
+    CoTRelaxedCorrectness,
+    AnywhereInAnswerRelaxedCorrectness,
+)
 from eval.task import HuggingFaceEval, Interaction
 
 
@@ -36,7 +40,7 @@ class MMMU(HuggingFaceEval):
             )
             question = f"{row['question']}\n{choices_str}"
         else:
-            question = row['question']
+            question = row["question"]
 
         # pattern to split string on <image x>:
         split_pattern = r"(<image \d+>)"
@@ -63,11 +67,8 @@ class MMMU(HuggingFaceEval):
         else:
             content_chunks.append({"type": "text", "text": PROMPT})
 
-
         answer = (
-            ast.literal_eval(row["answer"])
-            if "[" in row["answer"]
-            else [row["answer"]]
+            ast.literal_eval(row["answer"]) if "[" in row["answer"] else [row["answer"]]
         )
 
         return Interaction(
@@ -79,12 +80,11 @@ class MMMU(HuggingFaceEval):
                         "role": "user",
                         "content": content_chunks,
                     }
-                ]
+                ],
             },
             reference_answer=answer,
         )
-    
+
     @property
     def metric_fns(self) -> list[Metric]:
         return [CoTRelaxedCorrectness(), AnywhereInAnswerRelaxedCorrectness()]
-        

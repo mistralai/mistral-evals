@@ -25,19 +25,18 @@ class VQAv2(HuggingFaceEval):
                         "role": "user",
                         "content": [
                             {"type": "image", "image": row["image"]},
-                            {"type": "text", "text": row["question"] + "\n" + PROMPT}
-                        ]
+                            {"type": "text", "text": row["question"] + "\n" + PROMPT},
+                        ],
                     }
-                ]
+                ],
             },
-            reference_answer=row["answers"]
+            reference_answer=row["answers"],
         )
-    
+
     @property
     def metric_fns(self) -> list[Metric]:
         return [VQAMatch()]
-    
+
     def load_eval(self):
         for row in load_dataset(self.dataset_name)[self.dataset_split]:
             self.interactions.append(self._to_interaction(row))
-    
