@@ -13,7 +13,6 @@ from datasets import load_dataset
 import numpy as np
 
 from eval.task import HuggingFaceEval, Interaction
-from eval.utils import emplace_image
 
 JUDGES = frozenset(
     [

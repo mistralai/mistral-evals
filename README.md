@@ -1,6 +1,6 @@
 # Mistral Evals
 
-This repository contains code to run evals released by Mistral AI.
+This repository contains code to run evals released by Mistral AI as well as standardized prompts, parsing and metrics computation for popular academic benchmarks.
 
 ## Installation
 

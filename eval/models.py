@@ -1,5 +1,7 @@
+import base64
 import copy
 import json
+import io
 import re
 import time
 from typing import Any, Callable
@@ -14,7 +16,6 @@ def _wait_till_healthy(url) -> bool:
     match = re.match(r"^http.*:\d+$", base_url)
     assert match is not None, base_url
 
-    # Depending on the vllm version, we try multiple endpoints
     health_endpoint = f"{base_url}/health"
     timeout = 120
     t0 = time.time()

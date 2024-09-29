@@ -1,13 +1,5 @@
 from typing import Any
 
-import os
-import subprocess
-from PIL import Image
-from pathlib import Path
-
-from datasets import load_dataset
-from tqdm import tqdm
-
 from eval.metrics import (
     Metric,
     CoTRelaxedCorrectness,

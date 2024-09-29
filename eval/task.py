@@ -4,7 +4,6 @@ import copy
 import dataclasses
 from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from PIL import Image
 import numpy as np
 from datasets import load_dataset
 from tqdm import tqdm

@@ -1,10 +1,5 @@
 from typing import Any
 
-import ast
-import re
-
-from PIL import Image
-
 from eval.metrics import (
     Metric,
     CoTRelaxedCorrectness,

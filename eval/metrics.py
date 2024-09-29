@@ -12,7 +12,6 @@ def _normalize_string(s):
 
 
 def _remove_end_punctuation(unnormalized_string: str) -> str:
-    # remove end puncutation
     while (
         unnormalized_string
         and (
@@ -289,7 +288,7 @@ class AnywhereInAnswerRelaxedCorrectness(CoTRelaxedCorrectness):
                     return 1.0
                 elif str(number) + "%" in model_answer:
                     return 1.0
-            except:
+            except ValueError:
                 # Reference answer was a text string. We search for typical patterns
                 # in the model answer. Note that directly searching for the reference
                 # is not a good idea for letter-option choice questions, hence we look

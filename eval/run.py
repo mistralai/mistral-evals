@@ -5,7 +5,6 @@ from typing import Any, Callable
 import fire
 from eval.models import get_vllm_model_fn
 from eval.tasks import get_task
-from eval.utils import load_interactions, save_interactions
 
 
 def evaluate(
@@ -25,18 +24,8 @@ def evaluate(
     output_dir = Path(output_dir_str)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    print("Load datapoints for eval task.")
     eval_task.load_eval()
-
-    output_generations_file = output_dir / "generations.json"
     eval_task.get_responses(model_fn)
-    # save_interactions(output_generations_file, eval_task.interactions)
-    # if not output_generations_file.exists():
-    # else:
-    #     print("Found generations file %s", output_generations_file)
-    #     eval_task.interactions = load_interactions(output_generations_file)
-
-    print("Compute metrics.")
     eval_task.compute_metrics()
 
     metrics_output = json.dumps(eval_task.aggregate_metrics(), indent=4)
