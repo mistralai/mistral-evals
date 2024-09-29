@@ -91,10 +91,13 @@ class HuggingFaceEval(Eval):
     dataset_name: str
     dataset_split: str
 
+    def get_dataset(self):
+        return load_dataset(self.dataset_name)[self.dataset_split]
+
     def load_eval(self):
         """Loads dataset and applies transforms to get chat completion requests."""
         for row in tqdm(
-            load_dataset(self.dataset_name)[self.dataset_split],
+            self.get_dataset(),
             desc=f"Loading {self.dataset_name} [{self.dataset_split}]"):
 
             self.interactions.append(self._to_interaction(row))
