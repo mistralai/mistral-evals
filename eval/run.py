@@ -39,7 +39,7 @@ def evaluate(
     print("Compute metrics.")
     eval_task.compute_metrics()
 
-    metrics_output = json.dumps(eval_task.aggregate_metrics())
+    metrics_output = json.dumps(eval_task.aggregate_metrics(), indent=4)
     with (output_dir / f"{eval_name}.json").open("w") as f:
         f.write(metrics_output)
 

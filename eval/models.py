@@ -1,10 +1,10 @@
+import copy
 import json
 import re
 import time
 from typing import Any, Callable
 
 import requests
-from eval.utils import emplace_image
 
 
 def _wait_till_healthy(url) -> bool:
@@ -47,6 +47,25 @@ def _wait_till_healthy(url) -> bool:
 
 
 
+def _emplace_image(ccr: dict[str, Any]):
+    """Replaces image message with base64 encoded image."""
+    ccr = copy.deepcopy(ccr)
+    for m in ccr["messages"]:
+        if isinstance(m["content"], list):
+            for c in m["content"]:
+                if c["type"] == "image":
+                    c["type"] = "image_url"
+                    image = c.pop("image")
+                    stream = io.BytesIO()
+                    im_format = image.format or "PNG"
+                    image.save(stream, format=im_format)
+                    im_b64 = base64.b64encode(stream.getvalue()).decode("ascii")
+                    c["image_url"] = {
+                        "url": f"data:image/{im_format.lower()};base64,{im_b64}"
+                    }
+    return ccr
+
+
 
 def get_vllm_model_fn(model_name: str, url: str) -> Callable[[dict[str, Any]], str]:
     _wait_till_healthy(url)
@@ -58,7 +77,7 @@ def get_vllm_model_fn(model_name: str, url: str) -> Callable[[dict[str, Any]], s
         }
 
         # Convert images to base64 strings so they can be serialized.
-        request_dict = emplace_image(request_dict)
+        request_dict = _emplace_image(request_dict)
 
         # retry 3 times with backoff
         max_retries = 3
