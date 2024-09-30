@@ -109,12 +109,6 @@ class RelaxedCorrectness(Metric):
     data extraction process. We consider an answer to be correct if it is within
     5% of the gold answer. For non-numeric answers, we still need an exact match
     to consider an answer to be correct."
-
-    max_relative_change: Maximum relative change. By default set to 0.05.
-
-    Returns:
-    Whether the prediction was correct given the specified tolerance.
-    Specific to numeric inputs. Otherwise, treats same as exact accuracy.
     """
 
     def _relaxed_correctness(
