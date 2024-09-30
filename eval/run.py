@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Any, Callable
 
 import fire
-from eval.models import get_vllm_model_fn
+from eval.models import Model, VLLMModel
 from eval.tasks import get_task
 
 
 def evaluate(
-    model_fn: Callable[[dict[str, Any]], str],
+    model: Model,
     eval_name: str,
     output_dir_str: str,
 ):
@@ -25,7 +25,7 @@ def evaluate(
     output_dir.mkdir(exist_ok=True, parents=True)
 
     eval_task.load_eval()
-    eval_task.get_responses(model_fn)
+    eval_task.get_responses(model)
     eval_task.compute_metrics()
 
     metrics_output = json.dumps(eval_task.aggregate_metrics(), indent=4)
@@ -44,8 +44,8 @@ def eval_vllm(
     eval_name: str,
     output_dir_str: str,
 ):
-    model_fn = get_vllm_model_fn(model_name, url)
-    evaluate(model_fn, eval_name, output_dir_str)
+    model = VLLMModel(model_name, url)
+    evaluate(model, eval_name, output_dir_str)
 
 
 if __name__ == "__main__":
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             --output_dir_str ~/tmp \
             --eval_name docvqa
 
-    To evaluate your own model, you can use create a `model_fn` function which takes as
-    input a chat completion request and returns a string answer.
+    To evaluate your own model, you can use create a ModelClass which implements an
+    interface for returning a generated response given a chat completion request.
     """
     fire.Fire({"eval_vllm": eval_vllm})

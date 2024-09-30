@@ -9,6 +9,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 
 from eval.metrics import Metric
+from eval.models import Model
 
 
 @dataclasses.dataclass
@@ -52,14 +53,14 @@ class Eval(ABC):
         """Loads dataset and applies transforms to get chat completion requests."""
         raise NotImplementedError
 
-    def get_responses(self, model_fn=Callable[[dict[str, Any]], str]):
+    def get_responses(self, model: Model):
         """Queries model to get responses for each interaction."""
 
         futures: dict[Future, Interaction] = {}
         with ThreadPoolExecutor(max_workers=8) as executor:
             for interaction in self.interactions:
                 request = copy.deepcopy(interaction.request)
-                futures[executor.submit(model_fn, request)] = interaction
+                futures[executor.submit(model, request)] = interaction
 
             interactions_w_model_ans = []
             for future in tqdm(
