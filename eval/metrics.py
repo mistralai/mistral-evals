@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import re
 import string
 
@@ -24,8 +23,9 @@ def _remove_end_punctuation(unnormalized_string: str) -> str:
     return unnormalized_string
 
 
-@dataclass
 class Metric:
+    """Base class for metrics."""
+
     @property
     def name(self) -> str:
         raise NotImplementedError
@@ -35,7 +35,11 @@ class Metric:
 
 
 class VQAMatch(Metric):
-    name: str = "vqa_match"
+    """VQA match metric which gives partial score if less than 3 answers are matched."""
+
+    @property
+    def name(self) -> str:
+        return "vqa_match"
 
     def score(self, model_answer: str, reference_answer: str | list[str]) -> float:
         if not isinstance(reference_answer, list):
@@ -96,26 +100,26 @@ class ANLS(Metric):
 
 
 class RelaxedCorrectness(Metric):
+    """Relaxed correctness metrics.
+
+    The correctness tolerates certain error ratio defined by max_relative_change.
+    See https://arxiv.org/pdf/2203.10244.pdf, end of section 5.1:
+    "Following Methani et al. (2020), we use a relaxed accuracy measure for the
+    numeric answers to allow a minor inaccuracy that may result from the automatic
+    data extraction process. We consider an answer to be correct if it is within
+    5% of the gold answer. For non-numeric answers, we still need an exact match
+    to consider an answer to be correct."
+
+    max_relative_change: Maximum relative change. By default set to 0.05.
+
+    Returns:
+    Whether the prediction was correct given the specified tolerance.
+    Specific to numeric inputs. Otherwise, treats same as exact accuracy.
+    """
+
     def _relaxed_correctness(
         self, prediction: str, targets: list[str], max_relative_change: float = 0.05
     ) -> float:
-        """Calculates relaxed correctness.
-
-        The correctness tolerates certain error ratio defined by max_relative_change.
-        See https://arxiv.org/pdf/2203.10244.pdf, end of section 5.1:
-        "Following Methani et al. (2020), we use a relaxed accuracy measure for the
-        numeric answers to allow a minor inaccuracy that may result from the automatic
-        data extraction process. We consider an answer to be correct if it is within
-        5% of the gold answer. For non-numeric answers, we still need an exact match
-        to consider an answer to be correct."
-
-        max_relative_change: Maximum relative change. By default set to 0.05.
-
-        Returns:
-        Whether the prediction was correct given the specified tolerance.
-        Specific to numeric inputs. Otherwise, treats same as exact accuracy.
-        """
-
         def _to_float(text: str) -> tuple[float | None, bool]:
             text = text.strip()
             is_percent = text.endswith("%")
@@ -255,7 +259,10 @@ class CoTRelaxedCorrectness(RelaxedCorrectness):
 
 
 class AnywhereInAnswerRelaxedCorrectness(CoTRelaxedCorrectness):
-    """Falls back to handle cases where reference answer appears anywhere in generation."""
+    """Falls back to handle cases where reference answer appears anywhere in generation.
+
+    NOTE: This is an overly generous metric and is likely to falsely inflate scores.
+    """
 
     @property
     def name(self) -> str:

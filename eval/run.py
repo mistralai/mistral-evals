@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Any, Callable
 
 import fire
 from eval.models import Model, VLLMModel
