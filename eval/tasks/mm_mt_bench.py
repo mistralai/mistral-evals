@@ -127,7 +127,6 @@ class MultimodalLLMJudge:
                 rating = self.get_score(judgement)
                 # If the score is -1 it means that we failed to get a score.
                 if rating != -1.0:
-                    # TODO
                     return Judgement(judgement, rating)
             except Exception as e:
                 n_trials += 1
