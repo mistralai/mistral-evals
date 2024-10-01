@@ -17,6 +17,9 @@ pip install -r requirements.txt
 #### Example usage:
 
 **Step 1**: Host a model using vLLM
+
+To install vLLM, follow the directions [here](https://docs.vllm.ai/en/latest/getting_started/installation.html).
+
 ```
 >> vllm serve mistralai/Pixtral-12B-2409 --config_format mistral --tokenizer_mode "mistral"
 ```
@@ -29,13 +32,15 @@ pip install -r requirements.txt
         --output_dir_str ~/tmp
 ```
 
-To evaluate your own model, you can also create a `model_fn` function which takes as
-input a chat completion request and returns a string answer. Requests are provided in
-vLLM API format.
+To evaluate your own model, you can also create a `Model` class which implements a
+`__call__` method which takes as input a chat completion request and returns a string
+answer. Requests are provided in vLLM API format.
 
 ```
-def custom_model_fn(request: Dict[str, Any]) -> str:
-    # Your model code
-    ...
-    return answer
+class CustomModel(Model):
+
+    def __call__(self, request: dict[str, Any]):
+        # Your model code
+        ...
+        return answer
 ```

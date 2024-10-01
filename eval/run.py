@@ -9,7 +9,7 @@ from eval.tasks import get_task
 def evaluate(
     model: Model,
     eval_name: str,
-    output_dir_str: str,
+    output_dir: str | Path,
 ):
     """
     Args:
@@ -20,7 +20,7 @@ def evaluate(
     """
     eval_task = get_task(eval_name)
 
-    output_dir = Path(output_dir_str)
+    output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
     eval_task.load_eval()
@@ -41,10 +41,10 @@ def eval_vllm(
     model_name: str,
     url: str,
     eval_name: str,
-    output_dir_str: str,
+    output_dir: str | Path,
 ):
     model = VLLMModel(model_name, url)
-    evaluate(model, eval_name, output_dir_str)
+    evaluate(model, eval_name, output_dir)
 
 
 if __name__ == "__main__":

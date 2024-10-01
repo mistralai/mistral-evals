@@ -34,6 +34,7 @@ class MultimodalLLMJudge:
     API_MAX_RETRY: int = 3
     JUDGE_DEFAULT_TEMPERATURE: float = 0.0
     JUDGE_MAX_TOKENS: int = 2048
+    SYSTEM_PROMPT: str = 'Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the most recent question given the previous conversation as context. Your evaluation should consider correctness and helpfulness. You will be given a reference answer and the assistant\'s answer. Begin your evaluation by comparing the assistant\'s answer with the reference answer. Identify and correct any mistakes. Be as objective as possible. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".\n\n'
 
     def __init__(self, judge_name: str):
         self.judge_name = judge_name
@@ -47,8 +48,6 @@ class MultimodalLLMJudge:
             # Sometimes the judge fails to evaluate the generation
             rating = -1
         return rating
-
-    system_prompt: str = 'Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the most recent question given the previous conversation as context. Your evaluation should consider correctness and helpfulness. You will be given a reference answer and the assistant\'s answer. Begin your evaluation by comparing the assistant\'s answer with the reference answer. Identify and correct any mistakes. Be as objective as possible. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: "[[rating]]", for example: "Rating: [[5]]".\n\n'
 
     def _add_or_append_chunk(
         self, prompt: list[dict[str, Any]], chunk: str | dict[str, Any]
@@ -117,7 +116,7 @@ class MultimodalLLMJudge:
                     messages=[
                         {
                             "role": "system",
-                            "content": self.system_prompt,
+                            "content": self.SYSTEM_PROMPT,
                         },
                         {"role": "user", "content": prompt},
                     ],
