@@ -298,7 +298,13 @@ class AnywhereInAnswerRelaxedCorrectness(CoTRelaxedCorrectness):
                 candidates = []
                 for ref in reference_answer:
                     candidates.extend(
-                        [f"is {ref}", f"was {ref}", " {ref}.", "are {ref}"]
+                        [
+                            f"is {ref}",
+                            f"was {ref}",
+                            f" {ref}.",
+                            f"are {ref}",
+                            f"\n\n{ref}",
+                        ]
                     )
                 if any([c.lower() in model_answer for c in candidates]):
                     return 1.0

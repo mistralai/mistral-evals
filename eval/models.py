@@ -106,7 +106,6 @@ class VLLMModel(Model):
                         json.loads(response.content.decode("utf-8")), indent=4
                     )
                     raise ValueError(
-                        # Do not modify this error message, or update is_retryable_exception
                         f"Request failed (code={response.status_code}):\n\nRESPONSE: {response_json}"
                     )
 
