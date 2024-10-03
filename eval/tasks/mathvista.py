@@ -24,7 +24,7 @@ class MathVista(HuggingFaceEval):
     dataset_name = "AI4Math/MathVista"
     dataset_split = "testmini"
 
-    def _to_interaction(self, row: dict[str, Any]):
+    def _to_interaction(self, row: dict[str, Any]) -> Interaction:
         image = row["decoded_image"]
         question = row["query"]
 

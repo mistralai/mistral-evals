@@ -15,7 +15,7 @@ class VQAv2(HuggingFaceEval):
     dataset_name = "HuggingFaceM4/VQAv2"
     dataset_split = "validation"
 
-    def _to_interaction(self, row: Any):
+    def _to_interaction(self, row: Any) -> Interaction:
         return Interaction(
             {
                 "temperature": 0.0,

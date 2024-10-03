@@ -26,7 +26,7 @@ class ChartQA(HuggingFaceEval):
     dataset_name = "lmms-lab/ChartQA"
     dataset_split = "test"
 
-    def _to_interaction(self, row: dict[str, Any]):
+    def _to_interaction(self, row: dict[str, Any]) -> Interaction:
         image = row["image"]
         question = row["question"]
         answer: list[str] = row["answer"]

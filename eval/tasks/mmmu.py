@@ -29,7 +29,7 @@ class MMMU(HuggingFaceEval):
     dataset_name = "lmms-lab/MMMU"
     dataset_split = "validation"
 
-    def _to_interaction(self, row: dict[str, Any]):
+    def _to_interaction(self, row: dict[str, Any]) -> Interaction:
         content_chunks: list[dict[str, str | Image.Image]] = []
 
         if row["question_type"] == "multiple-choice":
