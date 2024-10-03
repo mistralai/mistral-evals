@@ -2,7 +2,7 @@ from typing import Any
 
 from eval.metrics import (
     Metric,
-    CoTRelaxedCorrectness,
+    ExplicitPromptRelaxedCorrectness,
     AnywhereInAnswerRelaxedCorrectness,
 )
 from eval.task import HuggingFaceEval, Interaction
@@ -53,4 +53,7 @@ class MathVista(HuggingFaceEval):
 
     @property
     def metric_fns(self) -> list[Metric]:
-        return [CoTRelaxedCorrectness(), AnywhereInAnswerRelaxedCorrectness()]
+        return [
+            ExplicitPromptRelaxedCorrectness(),
+            AnywhereInAnswerRelaxedCorrectness(),
+        ]

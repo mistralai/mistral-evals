@@ -211,12 +211,12 @@ class RelaxedCorrectness(Metric):
         return self._relaxed_correctness(model_answer, reference_answer)
 
 
-class CoTRelaxedCorrectness(RelaxedCorrectness):
-    """Relaxed correctness for CoT-style outputs."""
+class ExplicitPromptRelaxedCorrectness(RelaxedCorrectness):
+    """Relaxed correctness for explicit prompt."""
 
     @property
     def name(self) -> str:
-        return "cot_relaxed_correctness"
+        return "explicit_prompt_relaxed_correctness"
 
     def _get_final_answer(self, generation: str) -> str:
         def _find_last_occurrence(pattern: str, string: str):
@@ -252,7 +252,7 @@ class CoTRelaxedCorrectness(RelaxedCorrectness):
         return super().score(parsed_model_answer, reference_answer)
 
 
-class AnywhereInAnswerRelaxedCorrectness(CoTRelaxedCorrectness):
+class AnywhereInAnswerRelaxedCorrectness(ExplicitPromptRelaxedCorrectness):
     """Falls back to handle cases where reference answer appears anywhere in generation.
 
     NOTE: This is an overly generous metric and is likely to falsely inflate scores.
