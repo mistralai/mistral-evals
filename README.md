@@ -30,7 +30,7 @@ To install vLLM, follow the directions [here](https://docs.vllm.ai/en/latest/get
 
 **Step 2**: Evaluate hosted model.
 ```
->> python -m eval.mm_mt_bench eval_vllm \
+>> python -m eval.run eval_vllm \
         --model_name mistralai/Pixtral-12B-2409 \
         --url http://0.0.0.0:8000 \
         --output_dir ~/tmp
