@@ -33,7 +33,7 @@ To install vLLM, follow the directions [here](https://docs.vllm.ai/en/latest/get
 >> python -m eval.run eval_vllm \
         --model_name mistralai/Pixtral-12B-2409 \
         --url http://0.0.0.0:8000 \
-        --output_dir ~/tmp
+        --output_dir ~/tmp \
         --eval_name "mm_mt_bench"
 ```
 
