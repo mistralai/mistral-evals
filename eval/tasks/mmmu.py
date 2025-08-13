@@ -73,14 +73,16 @@ class MMMU(HuggingFaceEval):
 
         return Interaction(
             {
-                "temperature": 0.0,
-                "max_tokens": 2048,
+                "temperature": 1.0,
+                "max_tokens": 60000,
                 "messages": [
                     {
                         "role": "user",
                         "content": content_chunks,
                     }
                 ],
+                "top_p": 0.0001,
+                "top_k": 2,
             },
             reference_answer=answer,
         )
