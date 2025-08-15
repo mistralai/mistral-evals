@@ -93,7 +93,7 @@ class Eval(ABC):
     def save_question_answer(self) -> dict[int, Union[dict[str, str], str, list[str]]]:
         """Save question and answer to a json file."""
 
-        result: dict[int, Union[dict[str, str], str, list[str]]] = {} 
+        result: dict[str, Union[dict[str, str], str, list[str]]] = {}
         for i in range(len(self.interactions)):
             result[str(i)] = {"request": self.interactions[i].request,
                               "model_answer": self.interactions[i].model_answer,
