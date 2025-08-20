@@ -10,6 +10,7 @@ def evaluate(
     model: Model,
     eval_name: str,
     output_dir: str | Path,
+    save_raw_output: bool = False,
 ):
     """
     Args:
@@ -36,15 +37,21 @@ def evaluate(
     print(metrics_output)
     print("=" * 80)
 
+    if save_raw_output:
+        raw_output = json.dumps(eval_task.save_question_answer(), indent=4)
+        with (output_dir / f"raw_output_{eval_name}.json").open("w") as f:
+            f.write(raw_output)
+
 
 def eval_vllm(
     model_name: str,
     url: str,
     eval_name: str,
     output_dir: str | Path,
+    save_raw_output: bool = False,
 ):
     model = VLLMModel(model_name, url)
-    evaluate(model, eval_name, output_dir)
+    evaluate(model, eval_name, output_dir, save_raw_output)
 
 
 if __name__ == "__main__":
@@ -58,7 +65,8 @@ if __name__ == "__main__":
             --model_name mistralai/Pixtral-12B-2409 \
             --url http://0.0.0.0:8000 \
             --output_dir_str ~/tmp \
-            --eval_name docvqa
+            --eval_name docvqa \
+            --save_raw_output
 
     To evaluate your own model, you can use create a ModelClass which implements an
     interface for returning a generated response given a chat completion request.

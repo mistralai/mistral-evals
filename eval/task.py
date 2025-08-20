@@ -90,6 +90,16 @@ class Eval(ABC):
             )  # type: ignore
         return overall_metrics
 
+    def save_question_answer(self) -> dict[str, dict[str, str] | str | list[str]]:
+        """Save question and answer to a json file."""
+
+        result: dict[str, dict[str, str] | str | list[str]] = {}
+        for i in range(len(self.interactions)):
+            result[str(i)] = {"request": self.interactions[i].request,
+                              "model_answer": self.interactions[i].model_answer,
+                              "reference_answer": self.interactions[i].reference_answer}
+
+        return result
 
 class HuggingFaceEval(Eval):
     """Evals hosted on hugging face for which datasets.load_dataset can be used."""
