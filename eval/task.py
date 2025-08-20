@@ -90,7 +90,7 @@ class Eval(ABC):
             )  # type: ignore
         return overall_metrics
 
-    def save_question_answer(self) -> dict[int, Union[dict[str, str], str, list[str]]]:
+    def save_question_answer(self) -> dict[str, dict[str, str] | str | list[str]]:
         """Save question and answer to a json file."""
 
         result: dict[str, Union[dict[str, str], str, list[str]]] = {}
