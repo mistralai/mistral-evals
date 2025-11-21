@@ -54,3 +54,7 @@ class CustomModel(Model):
         ...
         return answer
 ```
+
+## Usage
+
+*You must not use this library or our models in a manner that infringes, misappropriates, or otherwise violates any third party’s rights, including intellectual property rights.*
